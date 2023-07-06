@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const KeyTokenService = require("./keyToken.services");
 const { createTokenPair } = require("../auth/authUtils");
+const { getInfoData } = require("../utils");
 const RoleShop = {
 	SHOP: "SHOP",
 	WRITER: "WRITER",
@@ -35,8 +36,17 @@ class AccessService {
 					"rsa",
 					{
 						modulusLength: 4096,
+						publicKeyEncoding: {
+							type: "pkcs1",
+							format: "pem"
+						},
+						privateKeyEncoding: {
+							type: "pkcs1",
+							format: "pem"
+						}
 					}
 				);
+				console.log(publicKey);
 				const publicKeyString = await KeyTokenService.createKeyToken({
 					userId: newShop._id,
 					publicKey,
@@ -53,13 +63,13 @@ class AccessService {
 						userId: newShop._id,
 						email,
 					},
-					publicKey,
+					publicKeyString,
 					privateKey
 				);
                 return {
                     code: 201,
                     metadata: {
-                        shop: newShop,
+                        shop: getInfoData({ fileds: ['_id','name', 'email'] , object: newShop}),
                         tokens
                     }
                 }
